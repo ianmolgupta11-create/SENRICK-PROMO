@@ -5,12 +5,28 @@ import { ACADEMY_COURSES } from '../data/salonData';
 export const AcademySection: React.FC = () => {
   const [inquiryName, setInquiryName] = useState('');
   const [inquiryPhone, setInquiryPhone] = useState('');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState(ACADEMY_COURSES[0].title);
   const [submitted, setSubmitted] = useState(false);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.startsWith('91') && val.length > 10) {
+      val = val.slice(2);
+    } else if (val.startsWith('0') && val.length > 10) {
+      val = val.slice(1);
+    }
+    setInquiryPhone(val.slice(0, 10));
+    if (phoneError) setPhoneError(null);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inquiryName || !inquiryPhone) return;
+    if (!inquiryName.trim()) return;
+    if (inquiryPhone.length !== 10) {
+      setPhoneError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
     setSubmitted(true);
   };
 
@@ -133,10 +149,10 @@ export const AcademySection: React.FC = () => {
                   </div>
                   <h4 className="font-serif-luxury text-2xl text-white">Inquiry Received!</h4>
                   <p className="text-xs text-[#A89E93]">
-                    Our Senior Counselor from the Betiahata Academy will call you shortly at <span className="text-[#DFCA9F]">{inquiryPhone}</span> with syllabus and fee details.
+                    Our Senior Counselor from the Betiahata Academy will call you shortly at <span className="text-[#DFCA9F] font-semibold">+91 {inquiryPhone}</span> with syllabus and fee details.
                   </p>
                   <a
-                    href={`https://wa.me/918574003784?text=Hi%20Senrick%20Academy,%20I%20just%20submitted%20an%20inquiry%20for%20${encodeURIComponent(selectedCourse)}`}
+                    href={`https://wa.me/918574003784?text=${encodeURIComponent(`Hi Senrick Academy! I am ${inquiryName.trim()} (+91 ${inquiryPhone}). I just submitted an inquiry for ${selectedCourse}. Please share syllabus and fee structure.`)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 text-xs text-[#DFCA9F] hover:underline pt-2"
@@ -164,17 +180,39 @@ export const AcademySection: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] text-[#8E8377] uppercase tracking-wider block mb-1">
-                      WhatsApp / Mobile Number
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="+91 98765 43210"
-                      value={inquiryPhone}
-                      onChange={(e) => setInquiryPhone(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-lg text-xs bg-[#191513] border border-[#2E2822] text-[#EDE7DF] placeholder-[#6E6357] focus:outline-none focus:border-[#C9A96E]"
-                    />
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] text-[#8E8377] uppercase tracking-wider block">
+                        WhatsApp / Mobile Number *
+                      </label>
+                      <span className={`text-[10px] ${inquiryPhone.length === 10 ? 'text-[#34D399] font-medium' : 'text-[#8E8377]'}`}>
+                        {inquiryPhone.length}/10 digits
+                      </span>
+                    </div>
+                    <div className="flex rounded-lg border border-[#2E2822] focus-within:border-[#C9A96E] bg-[#191513] overflow-hidden transition-all">
+                      <div className="flex items-center gap-1.5 px-3 bg-[#221C18] border-r border-[#2E2822] text-xs font-semibold text-[#DFCA9F] select-none shrink-0">
+                        <span>🇮🇳</span>
+                        <span>+91</span>
+                      </div>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]{10}"
+                        maxLength={10}
+                        required
+                        placeholder="98765 43210"
+                        value={inquiryPhone}
+                        onChange={handlePhoneChange}
+                        className="w-full px-3 py-2.5 text-xs bg-transparent text-[#EDE7DF] placeholder-[#6E6357] focus:outline-none"
+                      />
+                    </div>
+                    {phoneError && (
+                      <p className="text-[10px] text-[#E07A5F] mt-1">{phoneError}</p>
+                    )}
+                    {inquiryPhone.length > 0 && inquiryPhone.length < 10 && !phoneError && (
+                      <p className="text-[10px] text-[#DFCA9F] mt-1">
+                        Enter 10-digit mobile number ({10 - inquiryPhone.length} more needed)
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="text-[11px] text-[#8E8377] uppercase tracking-wider block mb-1">

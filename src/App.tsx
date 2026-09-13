@@ -229,8 +229,8 @@ export default function App() {
           >
             <ShoppingBag className="w-4 h-4 fill-black" />
             <span>Bag ({totalCartCount}) • ₹{totalCartPrice.toLocaleString('en-IN')}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black text-[#DFCA9F] uppercase">
-              ⚡ GKP Same Day
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black text-[#DFCA9F] uppercase font-semibold">
+              GKP Same Day
             </span>
           </button>
         )}

@@ -57,6 +57,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Client info
   const [fullName, setFullName] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [notes, setNotes] = useState<string>('');
   const [promoCode, setPromoCode] = useState<string>('');
   const [promoApplied, setPromoApplied] = useState<boolean>(false);
@@ -83,6 +84,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.startsWith('91') && val.length > 10) {
+      val = val.slice(2);
+    } else if (val.startsWith('0') && val.length > 10) {
+      val = val.slice(1);
+    }
+    setPhone(val.slice(0, 10));
+    if (phoneError) setPhoneError(null);
+  };
+
   const handleApplyPromo = () => {
     if (promoCode.trim().toUpperCase() === 'SENRICKGLAM') {
       setPromoApplied(true);
@@ -91,7 +103,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !phone) return;
+    if (!fullName.trim()) return;
+    if (phone.length !== 10) {
+      setPhoneError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
     const code = `SRK-${Math.floor(100000 + Math.random() * 900000)}`;
     setBookingCode(code);
     setStep(5); // Step 5 is confirmation view
@@ -103,7 +119,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       `*New Appointment Booking Request*\n` +
       `Booking ID: ${bookingCode}\n` +
       `Client Name: ${fullName}\n` +
-      `Phone: ${phone}\n` +
+      `Phone: +91 ${phone}\n` +
       `Branch: ${currentBranch.name}\n` +
       `Date: ${bookingDate}\n` +
       `Time Slot: ${selectedTime}\n` +
@@ -390,17 +406,39 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-[#8E8377] uppercase tracking-wider block mb-1">
-                    Mobile / WhatsApp Number *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+91 98765 43210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-[#181512] border border-[#2E2721] text-[#EDE7DF] placeholder-[#6E6357] focus:outline-none focus:border-[#C9A96E]"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] text-[#8E8377] uppercase tracking-wider block">
+                      Mobile / WhatsApp Number *
+                    </label>
+                    <span className={`text-[10px] ${phone.length === 10 ? 'text-[#34D399] font-medium' : 'text-[#8E8377]'}`}>
+                      {phone.length}/10 digits
+                    </span>
+                  </div>
+                  <div className="flex rounded-xl border border-[#2E2721] focus-within:border-[#C9A96E] bg-[#181512] overflow-hidden transition-all">
+                    <div className="flex items-center gap-1.5 px-3.5 bg-[#201B17] border-r border-[#2E2721] text-xs font-semibold text-[#DFCA9F] select-none shrink-0">
+                      <span>🇮🇳</span>
+                      <span>+91</span>
+                    </div>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]{10}"
+                      maxLength={10}
+                      required
+                      placeholder="98765 43210"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      className="w-full px-3 py-2.5 text-xs bg-transparent text-[#EDE7DF] placeholder-[#6E6357] focus:outline-none"
+                    />
+                  </div>
+                  {phoneError && (
+                    <p className="text-[10px] text-[#E07A5F] mt-1">{phoneError}</p>
+                  )}
+                  {phone.length > 0 && phone.length < 10 && !phoneError && (
+                    <p className="text-[10px] text-[#DFCA9F] mt-1">
+                      Enter 10-digit mobile number ({10 - phone.length} more needed)
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -513,6 +551,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <div className="flex justify-between">
                     <span className="text-[#8E8377]">Branch:</span>
                     <span className="font-semibold text-white">{currentBranch.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8E8377]">Client Mobile:</span>
+                    <span className="font-semibold text-[#DFCA9F]">+91 {phone}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#8E8377]">Direct Phone:</span>

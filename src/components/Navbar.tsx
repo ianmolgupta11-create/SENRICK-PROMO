@@ -145,8 +145,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Right Action Buttons */}
             {activeView === 'store' ? (
-              /* Store View: Clean Bag Button */
-              <div className="flex items-center gap-3">
+              /* Store View: Clean Bag Button (Desktop/Tablet) */
+              <div className="hidden sm:flex items-center gap-3">
                 <button
                   onClick={() => onNavigateSection('salon-home')}
                   className="hidden sm:inline-flex lg:hidden items-center gap-1.5 px-3 py-2 text-xs uppercase tracking-wider text-[#C6BBAE] hover:text-white border border-[#352F2A] rounded-lg bg-[#171412]"
@@ -200,44 +200,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
 
-            {/* Mobile Action Controls */}
+            {/* Mobile Action Controls: Clean and uncluttered, no bag icon on mobile */}
             {activeView === 'store' ? (
               <div className="flex sm:hidden items-center gap-2">
                 <button
                   onClick={() => onNavigateSection('salon-home')}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-semibold text-[#EDE7DF] bg-[#1E1A17] border border-[#352F2A]"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] uppercase tracking-wider font-semibold text-[#EDE7DF] bg-[#1E1A17] border border-[#352F2A] active:scale-95"
                 >
                   <ArrowLeft className="w-3 h-3 text-[#C9A96E]" />
-                  <span>Salon</span>
-                </button>
-                <button
-                  onClick={onOpenCart}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-[#141009] bg-[#C9A96E]"
-                  aria-label="View Bag"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Bag ({cartCount})</span>
+                  <span>Back to Salon</span>
                 </button>
               </div>
             ) : (
               <div className="flex sm:hidden items-center gap-2">
                 <button
-                  onClick={onOpenCart}
-                  className="relative p-2 rounded-lg text-[#C6BBAE] bg-[#171412] border border-[#2C2723]"
-                  aria-label="View Bag"
-                >
-                  <ShoppingBag className="w-4 h-4 text-[#C9A96E]" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#1BD741] text-black text-[9px] font-black">
-                      {cartCount}
-                    </span>
-                  )}
-                </button>
-                <button
                   onClick={() => onOpenBooking()}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-semibold text-[#141009] bg-[#C9A96E]"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] uppercase tracking-wider font-semibold text-[#141009] bg-[#C9A96E] active:scale-95"
                 >
-                  <Calendar className="w-3 h-3" />
+                  <Calendar className="w-3.5 h-3.5" />
                   <span>Book</span>
                 </button>
                 <button

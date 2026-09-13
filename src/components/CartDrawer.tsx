@@ -4,7 +4,7 @@ import {
   MapPin, Clock, ArrowRight, MessageSquare, Phone, Sparkles, Tag, ShoppingBag 
 } from 'lucide-react';
 import { CartItem } from '../types';
-import { GORAKHPUR_AREAS } from '../data/productsData';
+import { GORAKHPUR_AREAS, GORAKHPUR_AREA_DETAILS, getPincodeByArea } from '../data/productsData';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -32,6 +32,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const [confirmedOrderId, setConfirmedOrderId] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.startsWith('91') && val.length > 10) {
+      val = val.slice(2);
+    } else if (val.startsWith('0') && val.length > 10) {
+      val = val.slice(1);
+    }
+    setPhone(val.slice(0, 10));
+    if (errorMsg) setErrorMsg('');
+  };
+
   if (!isOpen) return null;
 
   const totalMarketPrice = cart.reduce(
@@ -50,44 +61,84 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     setStep('checkout');
   };
 
+  const generateWhatsAppMessage = (orderId: string) => {
+    const pincode = getPincodeByArea(selectedArea);
+    const dateFormatted = new Date().toLocaleString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    const productsFormatted = cart
+      .map((item, idx) => {
+        const itemSubtotal = item.product.salonPrice * item.quantity;
+        const itemMarketTotal = item.product.marketPrice * item.quantity;
+        const itemSavings = itemMarketTotal - itemSubtotal;
+        return (
+          `🔹 *Product ${idx + 1}: ${item.product.name}*\n` +
+          `   • Brand: ${item.product.brand}\n` +
+          `   • Size / Volume: ${item.product.size}\n` +
+          `   • Quantity: ${item.quantity}\n` +
+          `   • Salon Price: ₹${item.product.salonPrice.toLocaleString('en-IN')} (MRP: ₹${item.product.marketPrice.toLocaleString('en-IN')})\n` +
+          `   • Subtotal: ₹${itemSubtotal.toLocaleString('en-IN')} [Saved: ₹${itemSavings.toLocaleString('en-IN')}]`
+        );
+      })
+      .join('\n\n');
+
+    return (
+      `🛍️ *NEW PRODUCT PURCHASE ORDER — SENRICK LUXURY SALON STORE*\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `📋 *ORDER REFERENCE:* #${orderId}\n` +
+      `📅 *Date & Time:* ${dateFormatted}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `👤 *CUSTOMER PURCHASE DETAILS:*\n` +
+      `• *Name:* ${customerName.trim()}\n` +
+      `• *Contact Number:* +91 ${phone.trim()}\n` +
+      `• *Delivery Address:* ${address.trim()}\n` +
+      `• *Landmark:* ${landmark.trim() ? landmark.trim() : 'N/A'}\n` +
+      `• *Gorakhpur Area:* ${selectedArea}\n` +
+      `• *Area PIN Code:* ${pincode}\n` +
+      `• *Preferred Delivery Slot:* ${deliverySlot}\n` +
+      `• *Payment Mode:* ${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'UPI / QR on Delivery'}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `📦 *ORDERED PRODUCTS DETAILS:*\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `${productsFormatted}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `💰 *BILL & PAYMENT SUMMARY:*\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `• *Market / MRP Value:* ₹${totalMarketPrice.toLocaleString('en-IN')}\n` +
+      `• *Special Salon Price:* ₹${totalSalonPrice.toLocaleString('en-IN')}\n` +
+      `• *Customer Savings:* ₹${totalSavings.toLocaleString('en-IN')} (${savingsPercent}% OFF)\n` +
+      `• *Delivery Charges:* FREE (Same-Day Gorakhpur Express)\n` +
+      `• *TOTAL AMOUNT PAYABLE ON ARRIVAL:* *₹${totalSalonPrice.toLocaleString('en-IN')}*\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `📍 *Dispatch Hub:* Senrick Salon, Betiahata / Golghar Hub, Gorakhpur\n` +
+      `🛵 *Dispatch Note:* 100% Original Salon Seal Verified. Please confirm order & dispatch delivery rider!`
+    );
+  };
+
   const handlePlaceOrder = (viaWhatsApp = false) => {
     if (!customerName.trim() || !phone.trim() || !address.trim()) {
-      setErrorMsg('Please enter your full name, phone number, and Gorakhpur delivery address.');
+      setErrorMsg('Please enter your full name, 10-digit mobile number, and Gorakhpur delivery address.');
+      return;
+    }
+
+    if (phone.trim().length !== 10) {
+      setErrorMsg('Please enter a valid 10-digit mobile number.');
       return;
     }
 
     const orderId = `SNK-GKP-${Math.floor(100000 + Math.random() * 900000)}`;
     setConfirmedOrderId(orderId);
 
+    const message = generateWhatsAppMessage(orderId);
+    const encoded = encodeURIComponent(message);
+
     if (viaWhatsApp) {
-      const itemsListText = cart
-        .map(
-          (c, idx) =>
-            `${idx + 1}. ${c.product.name} (${c.product.size}) x ${c.quantity} = ₹${(
-              c.product.salonPrice * c.quantity
-            ).toLocaleString('en-IN')}`
-        )
-        .join('\n');
-
-      const message = `🛍️ *NEW GORAKHPUR PRODUCT ORDER - SENRICK SALON*\n` +
-        `----------------------------------------\n` +
-        `*Order ID:* #${orderId}\n` +
-        `*Customer Name:* ${customerName}\n` +
-        `*Contact:* ${phone}\n` +
-        `*Delivery Address:* ${address}, Landmark: ${landmark || 'N/A'}\n` +
-        `*Gorakhpur Area:* ${selectedArea}\n` +
-        `*Slot Preference:* ${deliverySlot}\n` +
-        `*Payment Method:* ${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'UPI on Delivery'}\n` +
-        `----------------------------------------\n` +
-        `*Order Items:*\n${itemsListText}\n` +
-        `----------------------------------------\n` +
-        `*Market Value:* ₹${totalMarketPrice.toLocaleString('en-IN')}\n` +
-        `*Senrick Salon Price:* ₹${totalSalonPrice.toLocaleString('en-IN')}\n` +
-        `*Customer Savings:* ₹${totalSavings.toLocaleString('en-IN')} (${savingsPercent}% OFF)\n` +
-        `*Delivery:* FREE Same-Day Express in Gorakhpur\n\n` +
-        `Please confirm stock & dispatch rider from nearest salon branch!`;
-
-      const encoded = encodeURIComponent(message);
       window.open(`https://wa.me/918574003784?text=${encoded}`, '_blank');
     }
 
@@ -112,18 +163,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
-        <div className="p-5 border-b border-[#26211D] flex items-center justify-between bg-[#191513]">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-[#C9A96E]/15 text-[#DFCA9F]">
-              <ShoppingBag className="w-5 h-5" />
+        <div className="p-3.5 sm:p-5 border-b border-[#26211D] flex items-center justify-between bg-[#191513]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <div className="p-1.5 sm:p-2 rounded-lg bg-[#C9A96E]/15 text-[#DFCA9F]">
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="font-serif-luxury text-lg text-[#F3EFE9] font-bold">
+              <h3 className="font-serif-luxury text-base sm:text-lg text-[#F3EFE9] font-bold">
                 {step === 'cart' && 'Gorakhpur Salon Bag'}
-                {step === 'checkout' && 'Same-Day Express Checkout'}
+                {step === 'checkout' && 'Same-Day Checkout'}
                 {step === 'success' && 'Order Placed!'}
               </h3>
-              <p className="text-[11px] text-[#A5998B] flex items-center gap-1">
+              <p className="text-[10px] sm:text-[11px] text-[#A5998B] flex items-center gap-1">
                 <Truck className="w-3 h-3 text-[#1BD741]" />
                 Direct Hub Dispatch in Gorakhpur
               </p>
@@ -138,7 +189,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         </div>
 
         {/* Drawer Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-3.5 sm:space-y-4">
           {/* STEP 1: CART ITEMS */}
           {step === 'cart' && (
             <>
@@ -288,22 +339,41 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] uppercase tracking-wider text-[#A5998B] font-semibold mb-1">
-                    WhatsApp / Contact Number *
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="e.g. 98765 43210 (For rider dispatch)"
-                    className="w-full bg-[#1A1614] border border-[#352E28] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C9A96E]"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] uppercase tracking-wider text-[#A5998B] font-semibold">
+                      WhatsApp / Contact Number *
+                    </label>
+                    <span className={`text-[10px] ${phone.length === 10 ? 'text-[#1BD741] font-medium' : 'text-[#8E8377]'}`}>
+                      {phone.length}/10 digits
+                    </span>
+                  </div>
+                  <div className="flex rounded-lg border border-[#352E28] focus-within:border-[#C9A96E] bg-[#1A1614] overflow-hidden transition-all">
+                    <div className="flex items-center gap-1.5 px-3 bg-[#241E1A] border-r border-[#352E28] text-xs font-semibold text-[#DFCA9F] select-none shrink-0">
+                      <span>🇮🇳</span>
+                      <span>+91</span>
+                    </div>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]{10}"
+                      maxLength={10}
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      placeholder="98765 43210"
+                      className="w-full bg-transparent px-3 py-2 text-xs text-white placeholder-[#6E6357] focus:outline-none"
+                    />
+                  </div>
+                  {phone.length > 0 && phone.length < 10 && (
+                    <p className="text-[10px] text-[#DFCA9F] mt-1">
+                      Enter 10-digit mobile number ({10 - phone.length} more needed)
+                    </p>
+                  )}
                 </div>
 
                 {/* Gorakhpur Locality Selection */}
                 <div>
                   <label className="block text-[11px] uppercase tracking-wider text-[#A5998B] font-semibold mb-1">
-                    Select Gorakhpur Area *
+                    Select Gorakhpur Area & Pincode *
                   </label>
                   <div className="relative">
                     <select
@@ -311,13 +381,19 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       onChange={(e) => setSelectedArea(e.target.value)}
                       className="w-full bg-[#1A1614] border border-[#352E28] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C9A96E] appearance-none"
                     >
-                      {GORAKHPUR_AREAS.map((area) => (
-                        <option key={area} value={area} className="bg-[#1A1614] text-white">
-                          {area} (⚡ Same-Day Delivery)
+                      {GORAKHPUR_AREA_DETAILS.map((area) => (
+                        <option key={area.name} value={area.name} className="bg-[#1A1614] text-white">
+                          {area.name} — PIN {area.pincode} ({area.estTime})
                         </option>
                       ))}
                     </select>
                     <MapPin className="w-3.5 h-3.5 text-[#C9A96E] absolute right-3 top-2.5 pointer-events-none" />
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-[#1BD741]">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>
+                      Guaranteed Delivery: PIN {getPincodeByArea(selectedArea)} ({GORAKHPUR_AREA_DETAILS.find((a) => a.name === selectedArea)?.estTime || '2-3 Hours'})
+                    </span>
                   </div>
                 </div>
 
@@ -443,18 +519,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </div>
 
               <div className="p-3 rounded-lg bg-[#1F1B18] border border-[#352F29] text-xs text-[#DFCA9F] max-w-sm mx-auto">
-                ⚡ Our Gorakhpur delivery executive will call your phone (<strong className="text-white">{phone}</strong>) prior to arrival.
+                Our Gorakhpur delivery executive will call your phone (<strong className="text-white">+91 {phone}</strong>) prior to arrival.
               </div>
 
               <div className="pt-2 space-y-2 max-w-sm mx-auto">
                 <a
-                  href={`https://wa.me/918574003784?text=${encodeURIComponent(`Hi Senrick Salon! I placed Order #${confirmedOrderId} for delivery in ${selectedArea}. Please confirm dispatch status!`)}`}
+                  href={`https://wa.me/918574003784?text=${encodeURIComponent(generateWhatsAppMessage(confirmedOrderId))}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-3 px-4 rounded-xl bg-[#1BD741] text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-[#1BD741] text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#1BD741]/20"
                 >
                   <MessageSquare className="w-4 h-4 fill-black" />
-                  <span>Chat with Dispatch Desk</span>
+                  <span>Send Order Details on WhatsApp</span>
                 </a>
                 <button
                   onClick={handleReset}

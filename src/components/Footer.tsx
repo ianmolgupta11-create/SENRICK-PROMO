@@ -176,15 +176,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onNavigateSection
                 </a>
               </div>
             </div>
-
-            <div className="p-3 rounded-xl bg-[#14110F] border border-[#26201B] space-y-1">
-              <div className="text-[10px] uppercase font-bold text-[#DFCA9F] tracking-wider">
-                Official Redesign
-              </div>
-              <p className="text-[11px] text-[#786D62]">
-                Redesigned modern digital salon experience with direct booking concierge.
-              </p>
-            </div>
           </div>
         </div>
 

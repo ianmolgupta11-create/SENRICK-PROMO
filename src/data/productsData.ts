@@ -1,44 +1,81 @@
 import { ProductItem } from '../types';
 
-export const GORAKHPUR_AREAS = [
-  'Betiahata',
-  'Golghar',
-  'Gorakhnath',
-  'Mohaddipur',
-  'Medical College Road',
-  'Rapti Nagar (Phase 1-4)',
-  'Taramandal',
-  'Rustampur',
-  'Shahpur / Geeta Vatika',
-  'Daudpur',
-  'Asuran Chowk',
-  'Bank Road',
-  'Railway Colony & Station Area',
-  'Khorabar & Deoria Road',
-  'Basharatpur',
-  'Bichhia',
-  'Fertilizer Township',
-  'Civil Lines & Park Road',
-  'Alinagar & Urdu Bazar',
-  'Padri Bazar',
+export interface GorakhpurAreaInfo {
+  name: string;
+  pincode: string;
+  estTime: string;
+}
+
+export const GORAKHPUR_AREA_DETAILS: GorakhpurAreaInfo[] = [
+  { name: 'Betiahata', pincode: '273001', estTime: '1-2 Hours (Main Hub)' },
+  { name: 'Golghar', pincode: '273001', estTime: '1-2 Hours (Flagship Hub)' },
+  { name: 'Civil Lines & Park Road', pincode: '273001', estTime: '2 Hours' },
+  { name: 'Bank Road', pincode: '273001', estTime: '2 Hours' },
+  { name: 'Alinagar & Urdu Bazar', pincode: '273001', estTime: '2-3 Hours' },
+  { name: 'Gorakhnath', pincode: '273002', estTime: '2-3 Hours' },
+  { name: 'Basharatpur', pincode: '273003', estTime: '2-3 Hours' },
+  { name: 'Shahpur / Geeta Vatika', pincode: '273004', estTime: '2-3 Hours' },
+  { name: 'Arogya Mandir', pincode: '273005', estTime: '2-3 Hours' },
+  { name: 'Bichhia', pincode: '273006', estTime: '2-3 Hours' },
+  { name: 'Asuran Chowk', pincode: '273006', estTime: '2-3 Hours' },
+  { name: 'Fertilizer Township', pincode: '273007', estTime: '3 Hours' },
+  { name: 'Mohaddipur', pincode: '273008', estTime: '2 Hours' },
+  { name: 'Kunraghat', pincode: '273009', estTime: '2-3 Hours' },
+  { name: 'Khorabar & Deoria Road', pincode: '273010', estTime: '3 Hours' },
+  { name: 'Railway Colony & Station Area', pincode: '273012', estTime: '2 Hours' },
+  { name: 'Medical College Road', pincode: '273013', estTime: '2-3 Hours' },
+  { name: 'Rustampur', pincode: '273014', estTime: '2 Hours' },
+  { name: 'Taramandal', pincode: '273014', estTime: '2 Hours' },
+  { name: 'Padri Bazar', pincode: '273014', estTime: '2-3 Hours' },
+  { name: 'Rapti Nagar (Phase 1-4)', pincode: '273015', estTime: '2-3 Hours' },
+  { name: 'Daudpur', pincode: '273016', estTime: '2 Hours' },
+  { name: 'Surajkund', pincode: '273016', estTime: '2-3 Hours' },
+  { name: 'GIDA & Sahjanwa', pincode: '273017', estTime: 'Same-Day Express' },
+  { name: 'Pipraich Road', pincode: '273209', estTime: 'Same-Day Delivery' },
+  { name: 'Bhathat Road', pincode: '273212', estTime: 'Same-Day Delivery' },
 ];
 
-export const GORAKHPUR_PINCODES = [
-  '273001', // Gorakhpur Main, Golghar, Betiahata, Bank Road
+export const GORAKHPUR_AREAS: string[] = GORAKHPUR_AREA_DETAILS.map((a) => a.name);
+
+export const GORAKHPUR_PINCODES: string[] = [
+  '273001', // Gorakhpur Main, Golghar, Betiahata, Bank Road, Civil Lines, Park Road, Alinagar
   '273002', // Gorakhnath
   '273003', // Basharatpur
   '273004', // Shahpur, Geeta Vatika
-  '273006', // Bichhia
-  '273007', // Fertilizer Factory
-  '273008', // Mohaddipur
-  '273009', // Kunraghat, Medical College
-  '273010', // Khorabar
-  '273012', // Railway Colony
-  '273013', // BRD Medical College
-  '273014', // Rustampur, Taramandal
-  '273015', // Raptinagar
+  '273005', // Arogya Mandir
+  '273006', // Bichhia, Asuran Chowk
+  '273007', // Fertilizer Factory / Township
+  '273008', // Mohaddipur, Kasia Road
+  '273009', // Kunraghat
+  '273010', // Khorabar, Deoria Road
+  '273011', // Gorakhpur City
+  '273012', // Railway Colony, Railway Station
+  '273013', // BRD Medical College, Medical College Road
+  '273014', // Rustampur, Taramandal, Padri Bazar
+  '273015', // Rapti Nagar (Phase 1-4)
   '273016', // Daudpur, Surajkund
+  '273017', // GIDA & Sahjanwa
+  '273152', // Sahjanwa Town
+  '273209', // Pipraich
+  '273212', // Bhathat
 ];
+
+export const getAreaByPincode = (pincode: string): GorakhpurAreaInfo | undefined => {
+  return GORAKHPUR_AREA_DETAILS.find((item) => item.pincode === pincode.trim());
+};
+
+export const getPincodeByArea = (areaName: string): string => {
+  const match = GORAKHPUR_AREA_DETAILS.find((item) => item.name.toLowerCase() === areaName.toLowerCase());
+  return match ? match.pincode : '273001';
+};
+
+export const isGorakhpurPincodeDeliverable = (pincode: string): boolean => {
+  const clean = pincode.trim();
+  if (GORAKHPUR_PINCODES.includes(clean)) return true;
+  // Also deliverable across all Gorakhpur district pin codes (starts with 273 and 6 digits)
+  if (/^273\d{3}$/.test(clean)) return true;
+  return false;
+};
 
 export const PRODUCTS_DATA: ProductItem[] = [
   {
