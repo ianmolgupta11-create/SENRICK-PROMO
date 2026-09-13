@@ -1,6 +1,6 @@
 {
   "name": "Senrick Luxury Salon & Academy",
-  "description": "Modern luxury salon and beauty destination in Gorakhpur featuring couture hair styling, bridal makeup, skincare rituals, men's grooming, and academy courses.",
+  "description": "Modern luxury salon and beauty destination in Gorakhpur featuring salon services, bridal suites, academy courses, and an exclusive Gorakhpur product store with same-day express delivery and lower prices than e-commerce.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

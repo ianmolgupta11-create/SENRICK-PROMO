@@ -80,3 +80,43 @@ export interface BookingState {
   email?: string;
   notes?: string;
 }
+
+export interface ProductItem {
+  id: string;
+  name: string;
+  brand: string;
+  category: 'haircare' | 'skincare' | 'serums' | 'styling' | 'mens' | 'combos';
+  marketPrice: number; // MRP / Typical E-commerce price (Nykaa / Amazon)
+  salonPrice: number;  // Senrick exclusive discounted price
+  size: string;
+  rating: number;
+  reviewsCount: number;
+  image: string;
+  badge?: string;
+  description: string;
+  benefits: string[];
+  salonTip: string;
+  howToUse: string;
+  inStock: boolean;
+}
+
+export interface CartItem {
+  product: ProductItem;
+  quantity: number;
+}
+
+export interface GorakhpurOrder {
+  orderId: string;
+  items: CartItem[];
+  customerName: string;
+  phone: string;
+  address: string;
+  landmark: string;
+  area: string;
+  pincode: string;
+  deliverySlot: string;
+  paymentMethod: 'cod' | 'upi_delivery' | 'whatsapp';
+  totalAmount: number;
+  totalSavings: number;
+  createdAt: string;
+}

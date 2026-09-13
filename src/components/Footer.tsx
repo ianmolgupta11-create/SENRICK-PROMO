@@ -96,6 +96,11 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onNavigateSection
             </h4>
             <ul className="space-y-2 text-xs text-[#8E8377]">
               <li>
+                <button onClick={() => onNavigateSection('store')} className="hover:text-[#DFCA9F] transition-colors">
+                  Store
+                </button>
+              </li>
+              <li>
                 <button onClick={() => onNavigateSection('services')} className="hover:text-[#DFCA9F] transition-colors">
                   Services Atelier
                 </button>
